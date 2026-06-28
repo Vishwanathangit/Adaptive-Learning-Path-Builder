@@ -122,7 +122,7 @@ export const ComponentSidebar: React.FC = () => {
         {/* API Seeded Components Section */}
         <div className="pt-3 border-t border-slate-100">
           <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Available Content</h4>
-          {components.length === 0 ? (
+          {(!components || components.length === 0) ? (
             <p className="text-xs text-slate-400 italic">No available content loaded.</p>
           ) : (
             <div className="space-y-3">

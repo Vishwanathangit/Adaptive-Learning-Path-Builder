@@ -24,7 +24,7 @@ export const Simulator: React.FC = () => {
   const { currentNodeId, metrics, visitedNodeIds, evaluationError } = simulationState;
   
   const currentNode = activePath.nodes.find((n) => n.id === currentNodeId);
-  const associatedComp = components.find((c) => c.id === currentNode?.componentId);
+  const associatedComp = (components || []).find((c) => c.id === currentNode?.componentId);
 
   const handleScoreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseInt(e.target.value) || 0;

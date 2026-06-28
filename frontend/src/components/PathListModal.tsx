@@ -123,7 +123,7 @@ export const PathListModal: React.FC<PathListModalProps> = ({ isOpen, onClose })
                 <div className="w-8 h-8 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin" />
                 <span className="text-xs text-slate-500 font-semibold">Loading pathways...</span>
               </div>
-            ) : learningPaths.length === 0 ? (
+            ) : (!Array.isArray(learningPaths) || learningPaths.length === 0) ? (
               <div className="flex flex-col items-center justify-center py-12 text-center text-slate-400 gap-2">
                 <AlertTriangle className="w-8 h-8 text-slate-300" />
                 <span className="text-xs font-semibold text-slate-600">No pathways found</span>
