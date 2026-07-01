@@ -180,6 +180,111 @@ export const Canvas: React.FC = () => {
     }
   };
 
+  // Touch Helpers to convert TouchEvent to coordinates
+  const getTouchCoords = (e: React.TouchEvent) => {
+    if (e.touches.length === 0) return null;
+    const touch = e.touches[0];
+    return { clientX: touch.clientX, clientY: touch.clientY };
+  };
+
+  // Canvas Panning (Touch)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.target === e.currentTarget) {
+      const coords = getTouchCoords(e);
+      if (!coords) return;
+      setIsPanning(true);
+      setPanStart({ x: coords.clientX - offset.x, y: coords.clientY - offset.y });
+      clearSelection();
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const coords = getTouchCoords(e);
+    if (!coords) return;
+
+    if (isPanning) {
+      if (e.cancelable) e.preventDefault();
+      setOffset({
+        x: coords.clientX - panStart.x,
+        y: coords.clientY - panStart.y
+      });
+      return;
+    }
+
+    if (draggedNodeId !== null) {
+      if (e.cancelable) e.preventDefault();
+      if (!canvasRef.current) return;
+      const rect = canvasRef.current.getBoundingClientRect();
+      const dropX = (coords.clientX - rect.left - offset.x) / zoom;
+      const dropY = (coords.clientY - rect.top - offset.y) / zoom;
+      
+      const newX = Math.round(dropX - dragOffset.x);
+      const newY = Math.round(dropY - dragOffset.y);
+      
+      updateNodePosition(draggedNodeId, { x: newX, y: newY });
+      return;
+    }
+
+    if (connectingNodeId !== null) {
+      if (e.cancelable) e.preventDefault();
+      if (!canvasRef.current) return;
+      const rect = canvasRef.current.getBoundingClientRect();
+      const dropX = (coords.clientX - rect.left - offset.x) / zoom;
+      const dropY = (coords.clientY - rect.top - offset.y) / zoom;
+      setMousePos({ x: dropX, y: dropY });
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsPanning(false);
+    setDraggedNodeId(null);
+    if (connectingNodeId !== null) {
+      setConnectingNodeId(null);
+    }
+  };
+
+  const handleNodeTouchStart = (e: React.TouchEvent, node: CanvasNode) => {
+    if (isSimulating) return;
+    e.stopPropagation();
+    selectNode(node.id);
+
+    const coords = getTouchCoords(e);
+    if (!coords || !canvasRef.current) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const mouseCanvasX = (coords.clientX - rect.left - offset.x) / zoom;
+    const mouseCanvasY = (coords.clientY - rect.top - offset.y) / zoom;
+
+    setDraggedNodeId(node.id);
+    setDragOffset({
+      x: mouseCanvasX - node.position.x,
+      y: mouseCanvasY - node.position.y
+    });
+  };
+
+  const handleConnectStartTouch = (e: React.TouchEvent, node: CanvasNode) => {
+    if (isSimulating) return;
+    e.stopPropagation();
+    setConnectingNodeId(node.id);
+    const coords = getHandleCoordinates(node, 'output');
+    setMousePos(coords);
+  };
+
+  const handleConnectEndTouch = (e: React.TouchEvent, targetNode: CanvasNode) => {
+    if (isSimulating) return;
+    e.stopPropagation();
+    if (connectingNodeId !== null && connectingNodeId !== targetNode.id) {
+      addEdge({
+        sourceNodeId: connectingNodeId,
+        targetNodeId: targetNode.id,
+        isDefault: activePath.edges.filter((edge) => edge.sourceNodeId === connectingNodeId).length === 0,
+        priority: activePath.edges.filter((edge) => edge.sourceNodeId === connectingNodeId).length + 1,
+        conditions: { operator: 'AND', rules: [] }
+      });
+    }
+    setConnectingNodeId(null);
+  };
+
   // Node Drag Start
   const handleNodeMouseDown = (e: React.MouseEvent, node: CanvasNode) => {
     if (isSimulating) return;
@@ -255,6 +360,9 @@ export const Canvas: React.FC = () => {
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseDown={handleBackgroundMouseDown}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
       className={`grow bg-bg-main overflow-hidden relative cursor-grab active:cursor-grabbing select-none border-b border-border-main ${
         isPanning && 'cursor-grabbing'
       }`}
@@ -293,7 +401,7 @@ export const Canvas: React.FC = () => {
               document.exitFullscreen();
             }
           }}
-          className="w-9 h-9 flex items-center justify-center bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg shadow-sm transition"
+          className="hidden md:flex w-9 h-9 items-center justify-center bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg shadow-sm transition"
           title="Toggle Fullscreen"
         >
           <Maximize className="w-4 h-4" />
@@ -483,6 +591,7 @@ export const Canvas: React.FC = () => {
                 <div
                   key={node.id}
                   onMouseDown={(e) => handleNodeMouseDown(e, node)}
+                  onTouchStart={(e) => handleNodeTouchStart(e, node)}
                   className={`absolute bg-[#ECFDF5] border-[1.5px] border-[#10B981] rounded-lg shadow-sm flex items-center px-3 gap-2.5 cursor-grab active:cursor-grabbing select-none pointer-events-auto transition-all duration-150 ${isSelected ? 'ring-2 ring-[#10B981]/20' : ''} ${isSimCurrent ? 'ring-4 ring-[#10B981]/30 shadow-2xl scale-105' : ''}`}
                   style={{
                     width: `200px`,
@@ -501,6 +610,7 @@ export const Canvas: React.FC = () => {
                   {/* Bottom Connection Handle */}
                   <div
                     onMouseDown={(e) => handleConnectStart(e, node)}
+                    onTouchStart={(e) => handleConnectStartTouch(e, node)}
                     className="absolute left-1/2 bottom-[-5px] -translate-x-1/2 w-[10px] h-[10px] rounded-full border-[1.5px] border-white bg-[#10B981] cursor-crosshair hover:scale-125 transition shadow-sm z-20"
                     title="Drag output connection"
                   />
@@ -515,6 +625,7 @@ export const Canvas: React.FC = () => {
                 <div
                   key={node.id}
                   onMouseDown={(e) => handleNodeMouseDown(e, node)}
+                  onTouchStart={(e) => handleNodeTouchStart(e, node)}
                   className={`absolute bg-white border-[1.5px] border-slate-300 rounded-lg shadow-sm flex items-center px-3 gap-2.5 cursor-grab active:cursor-grabbing select-none pointer-events-auto transition-all duration-150 ${isSelected ? 'ring-2 ring-slate-400/20' : ''}`}
                   style={{
                     width: `200px`,
@@ -535,6 +646,7 @@ export const Canvas: React.FC = () => {
                   {/* Top Connection Handle */}
                   <div
                     onMouseUp={(e) => handleConnectEnd(e, node)}
+                    onTouchEnd={(e) => handleConnectEndTouch(e, node)}
                     className="absolute left-1/2 top-[-5px] -translate-x-1/2 w-[10px] h-[10px] rounded-full border-[1.5px] border-white bg-slate-500 cursor-crosshair hover:scale-125 transition shadow-sm z-20"
                     title="Connect input handle"
                   />
@@ -567,6 +679,7 @@ export const Canvas: React.FC = () => {
               <div
                 key={node.id}
                 onMouseDown={(e) => handleNodeMouseDown(e, node)}
+                onTouchStart={(e) => handleNodeTouchStart(e, node)}
                 className={cardClasses}
                 style={{
                   width: `${nodeWidth}px`,
@@ -578,6 +691,7 @@ export const Canvas: React.FC = () => {
                 {/* Input Connection Handle (Top) */}
                 <div
                   onMouseUp={(e) => handleConnectEnd(e, node)}
+                  onTouchEnd={(e) => handleConnectEndTouch(e, node)}
                   className={`absolute top-[-5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full border-[1.5px] border-white ${baseBorder.replace('border-', 'bg-')} flex items-center justify-center cursor-crosshair hover:scale-125 transition shadow-sm z-20`}
                   title="Connect input handle"
                 />
@@ -585,6 +699,7 @@ export const Canvas: React.FC = () => {
                 {/* Output Connection Handle (Bottom) */}
                 <div
                   onMouseDown={(e) => handleConnectStart(e, node)}
+                  onTouchStart={(e) => handleConnectStartTouch(e, node)}
                   className={`absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full border-[1.5px] border-white ${baseBorder.replace('border-', 'bg-')} flex items-center justify-center cursor-crosshair hover:scale-125 transition shadow-sm z-20`}
                   title="Drag output connection"
                 />

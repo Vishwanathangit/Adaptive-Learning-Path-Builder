@@ -1,8 +1,12 @@
 import React from 'react';
 import { useStore } from '../store/useStore';
-import { Layers, Info, CheckCircle2 } from 'lucide-react';
+import { Layers, Info, CheckCircle2, X } from 'lucide-react';
 
-export const ComponentSidebar: React.FC = () => {
+interface ComponentSidebarProps {
+  onClose?: () => void;
+}
+
+export const ComponentSidebar: React.FC<ComponentSidebarProps> = ({ onClose }) => {
   const { activePath, addNode, isSimulating, components, selectNode } = useStore();
 
   // Calculate a staggered position so nodes don't stack on top of each other
@@ -71,9 +75,19 @@ export const ComponentSidebar: React.FC = () => {
 
   return (
     <aside className="w-[300px] border-r border-border-main bg-bg-panel flex flex-col h-full shrink-0 select-none">
-      <div className="p-5 border-b border-border-main">
-        <h2 className="text-base font-bold text-slate-800">Add Components</h2>
-        <p className="text-xs text-slate-500 mt-1">Drag or click to add to canvas</p>
+      <div className="p-5 border-b border-border-main flex items-center justify-between">
+        <div>
+          <h2 className="text-base font-bold text-slate-800">Add Components</h2>
+          <p className="text-xs text-slate-500 mt-1">Drag or click to add to canvas</p>
+        </div>
+        {onClose && (
+          <button 
+            onClick={onClose} 
+            className="lg:hidden p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-800 transition"
+          >
+            <X className="w-4.5 h-4.5" />
+          </button>
+        )}
       </div>
 
       <div className="grow overflow-y-auto p-5 space-y-5 scrollbar-thin scrollbar-thumb-border-main">

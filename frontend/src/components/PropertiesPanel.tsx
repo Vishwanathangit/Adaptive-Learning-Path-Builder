@@ -9,7 +9,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export const PropertiesPanel: React.FC = () => {
+interface PropertiesPanelProps {
+  onClose?: () => void;
+}
+
+export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ onClose }) => {
   const {
     activePath,
     selectedNodeId,
@@ -76,16 +80,27 @@ export const PropertiesPanel: React.FC = () => {
             <h2 className="text-base font-bold text-text-main">Properties</h2>
             <p className="text-xs text-text-muted capitalize">{uiType}</p>
           </div>
-          {!isSpecialNode && (
-            <button 
-              onClick={() => deleteNode(selectedNode.id)}
-              disabled={isSimulating}
-              className="text-node-rose hover:text-node-rose/80 transition p-2 hover:bg-node-rose-bg rounded-lg"
-              title="Delete Component"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          )}
+          <div className="flex items-center gap-1">
+            {!isSpecialNode && (
+              <button 
+                onClick={() => deleteNode(selectedNode.id)}
+                disabled={isSimulating}
+                className="text-node-rose hover:text-node-rose/80 transition p-2 hover:bg-node-rose-bg rounded-lg"
+                title="Delete Component"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+            {onClose && (
+              <button 
+                onClick={onClose} 
+                className="lg:hidden p-2 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-800 transition"
+                title="Close properties"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="grow overflow-y-auto p-5 space-y-6 scrollbar-thin scrollbar-thumb-border-main">
@@ -271,13 +286,24 @@ export const PropertiesPanel: React.FC = () => {
             <h2 className="text-base font-bold text-text-main">Edge Properties</h2>
             <p className="text-xs text-text-muted">Connection Logic</p>
           </div>
-          <button 
-            onClick={() => deleteEdge(selectedEdge.id)}
-            disabled={isSimulating}
-            className="text-node-rose hover:text-node-rose/80 transition p-2 hover:bg-node-rose-bg rounded-lg"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button 
+              onClick={() => deleteEdge(selectedEdge.id)}
+              disabled={isSimulating}
+              className="text-node-rose hover:text-node-rose/80 transition p-2 hover:bg-node-rose-bg rounded-lg"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+            {onClose && (
+              <button 
+                onClick={onClose} 
+                className="lg:hidden p-2 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-800 transition"
+                title="Close properties"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="grow overflow-y-auto p-5 space-y-6 scrollbar-thin scrollbar-thumb-border-main">
@@ -309,7 +335,16 @@ export const PropertiesPanel: React.FC = () => {
 
   // 3. DEFAULT PLACEHOLDER
   return (
-    <aside className="w-[320px] border-l border-border-main bg-bg-panel flex flex-col h-full shrink-0 justify-center items-center text-center p-8 select-none">
+    <aside className="w-[320px] border-l border-border-main bg-bg-panel flex flex-col h-full shrink-0 relative justify-center items-center text-center p-8 select-none">
+      {onClose && (
+        <button 
+          onClick={onClose} 
+          className="lg:hidden absolute top-4 right-4 p-2 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-800 transition"
+          title="Close properties"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
       <div className="w-14 h-14 rounded-2xl bg-bg-main border border-border-main flex items-center justify-center text-text-muted mb-4 shadow-sm">
         <Info className="w-6 h-6" />
       </div>

@@ -99,25 +99,25 @@ export const PathListModal: React.FC<PathListModalProps> = ({ isOpen, onClose })
         ))}
       </div>
 
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
         {/* Modal Container */}
-        <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl shadow-xl flex flex-col max-h-[80vh] overflow-hidden">
+        <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl shadow-xl flex flex-col max-h-[85vh] sm:max-h-[80vh] overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
-            <div className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-500" />
-              <h2 className="text-base font-bold text-slate-800">Load Saved Learning Paths</h2>
+          <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200 bg-slate-50">
+            <div className="flex items-center gap-2 min-w-0">
+              <FileText className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-blue-500 shrink-0" />
+              <h2 className="text-sm sm:text-base font-bold text-slate-800 truncate">Load Saved Learning Paths</h2>
             </div>
             <button 
               onClick={onClose}
               className="text-slate-400 hover:text-slate-600 p-1 hover:bg-slate-100 rounded-lg transition"
             >
-              <X className="w-4.5 h-4.5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* List Body */}
-          <div className="grow overflow-y-auto p-6 space-y-3 scrollbar-thin scrollbar-thumb-slate-200">
+          <div className="grow overflow-y-auto p-4 sm:p-6 space-y-3 scrollbar-thin scrollbar-thumb-slate-200">
             {isLoading && !isDeleting ? (
               <div className="flex flex-col items-center justify-center py-12 gap-3">
                 <div className="w-8 h-8 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin" />
@@ -135,7 +135,7 @@ export const PathListModal: React.FC<PathListModalProps> = ({ isOpen, onClose })
                   <div key={path.id} className="flex flex-col">
                     <div
                       onClick={() => handleSelectPath(path.id)}
-                      className={`group border rounded-xl p-4 flex items-center justify-between cursor-pointer transition-all duration-200 ${
+                      className={`group border rounded-xl p-3.5 sm:p-4 flex items-center justify-between cursor-pointer transition-all duration-200 ${
                         pendingDeleteId === path.id
                           ? 'border-rose-300 bg-rose-50/40 rounded-b-none'
                           : activePath?.id === path.id
@@ -143,7 +143,7 @@ export const PathListModal: React.FC<PathListModalProps> = ({ isOpen, onClose })
                           : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50/50'
                       }`}
                     >
-                      <div className="flex flex-col gap-1 pr-4 min-w-0">
+                      <div className="flex flex-col gap-1 pr-3 sm:pr-4 min-w-0">
                         <span className="text-xs font-bold text-slate-800 group-hover:text-blue-600 truncate">
                           {path.name}
                         </span>
@@ -181,15 +181,15 @@ export const PathListModal: React.FC<PathListModalProps> = ({ isOpen, onClose })
                     {pendingDeleteId === path.id && (
                       <div
                         onClick={(e) => e.stopPropagation()}
-                        className="border border-t-0 border-rose-200 bg-rose-50 rounded-b-xl px-4 py-3 flex items-center justify-between gap-3 animate-in slide-in-from-top-1 duration-150"
+                        className="border border-t-0 border-rose-200 bg-rose-50 rounded-b-xl px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in slide-in-from-top-1 duration-150"
                       >
                         <div className="flex items-center gap-2 text-rose-700 min-w-0">
                           <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                          <span className="text-[11px] font-medium truncate">
+                          <span className="text-[11px] font-medium truncate sm:whitespace-normal">
                             Delete <strong>"{path.name}"</strong>? This cannot be undone.
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
                           <button
                             onClick={handleCancelDelete}
                             className="text-[11px] font-semibold px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition"

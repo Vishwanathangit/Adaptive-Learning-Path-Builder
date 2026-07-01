@@ -4,10 +4,15 @@ import {
   PlayCircle, 
   RefreshCw, 
   AlertTriangle, 
-  CheckCircle2 
+  CheckCircle2,
+  X
 } from 'lucide-react';
 
-export const Simulator: React.FC = () => {
+interface SimulatorProps {
+  onClose?: () => void;
+}
+
+export const Simulator: React.FC<SimulatorProps> = ({ onClose }) => {
   const {
     activePath,
     simulationState,
@@ -48,12 +53,23 @@ export const Simulator: React.FC = () => {
           <PlayCircle className="w-4 h-4 text-amber-600 animate-pulse" />
           <h2 className="text-xs font-bold text-amber-700 tracking-wider uppercase">Path Simulator</h2>
         </div>
-        <button
-          onClick={stopSimulation}
-          className="text-[10px] font-bold text-slate-500 hover:text-slate-800 border border-slate-200 px-2 py-0.5 rounded transition hover:bg-slate-50"
-        >
-          Exit
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={stopSimulation}
+            className="text-[10px] font-bold text-slate-500 hover:text-slate-800 border border-slate-200 px-2 py-0.5 rounded transition hover:bg-slate-50"
+          >
+            Exit
+          </button>
+          {onClose && (
+            <button 
+              onClick={onClose} 
+              className="lg:hidden p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-800 transition"
+              title="Collapse simulator"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Simulator Body */}
